@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">LazyRestaurant</string>
+    <string name="search_label">Enter a location to explore all the amazing restaurants nearby</string>
+    <string name="search_hint">(e.g. Waterloo)</string>
+    <string name="search_text">SEARCH</string>
+    <string name="search_around_you_text">SEARCH NEARBY</string>
+</resources>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:background="@color/second_white">
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginRight="32dp"
+        android:layout_marginLeft="32dp"
+        android:orientation="vertical"
+        android:rowCount="6"
+        android:columnCount="2"
+        >
+
+        <ImageView
+            android:src="@drawable/gym_lazy_logo"
+            android:layout_columnWeight="3"
+            android:layout_row="0"
+            android:layout_column="0"
+            android:layout_columnSpan="2"
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="32dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_row="1"
+            android:layout_column="0"
+            android:layout_columnSpan="2"
+            android:layout_columnWeight="2"
+            android:text="@string/search_label"
+            android:textSize="16sp" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_column="0"
+            android:layout_row="2"
+            android:layout_columnWeight="2"
+            android:layout_columnSpan="2"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="12dp"
+            android:hint="@string/search_hint"
+            app:startIconDrawable="@drawable/ic_baseline_search_24"
+            >
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:layout_column="0"
+            android:layout_row="3"
+            android:layout_columnWeight="2"
+            android:layout_columnSpan="2"
+            android:text="@string/search_text"
+            android:elevation="2dp"/>
+
+        <RelativeLayout
+            android:layout_column="0"
+            android:layout_row="4"
+            android:layout_columnWeight="2"
+            android:layout_columnSpan="2"
+            android:layout_width="match_parent"
+            >
+
+            <TextView
+                android:id="@+id/or_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:text="OR"
+                android:textColor="@color/black"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@id/or_label"
+                android:background="@color/silver"
+                />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@id/or_label"
+                android:background="@color/silver"
+                />
+
+        </RelativeLayout>
+
+        <Button
+            android:layout_column="0"
+            android:layout_row="5"
+            android:layout_columnWeight="2"
+            android:layout_columnSpan="2"
+            android:elevation="2dp"
+            android:text="@string/search_around_you_text"/>
+
+    </GridLayout>
+
+</LinearLayout>
