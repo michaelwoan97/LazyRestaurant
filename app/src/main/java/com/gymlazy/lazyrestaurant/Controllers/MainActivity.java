@@ -1,12 +1,15 @@
-package com.gymlazy.lazyrestaurant;
+package com.gymlazy.lazyrestaurant.Controllers;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.graphics.Color;
 import android.os.Bundle;
 
 import com.google.android.material.tabs.TabLayout;
+import com.gymlazy.lazyrestaurant.Controllers.FragmentAdapter;
+import com.gymlazy.lazyrestaurant.R;
 
 /**
  * Copyright: GymLazy All rights reserved
@@ -25,6 +28,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        getSupportActionBar().setElevation(0f);
+
         mTabLayout = (TabLayout) findViewById(R.id.tab_layout);
         mViewPager2 = (ViewPager2) findViewById(R.id.view_pager2);
 
@@ -32,9 +37,9 @@ public class MainActivity extends AppCompatActivity {
         mFragmentAdapter = new FragmentAdapter(fm, getLifecycle());
         mViewPager2.setAdapter(mFragmentAdapter);
 
-        mTabLayout.addTab(mTabLayout.newTab().setText("HOME"));
-        mTabLayout.addTab(mTabLayout.newTab().setText("FAVOURITES"));
-
+        mTabLayout.addTab(mTabLayout.newTab().setText("HOME").setIcon(R.drawable.ic_baseline_home_24));
+        mTabLayout.addTab(mTabLayout.newTab().setText("FAVOURITES").setIcon(R.drawable.ic_baseline_favorite_24));
+        mTabLayout.setSelectedTabIndicatorColor(Color.parseColor("#eefbfe"));
         mTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
@@ -58,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
                 mTabLayout.selectTab(mTabLayout.getTabAt(position));
             }
         });
+
+
     }
 
 

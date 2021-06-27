@@ -1,4 +1,4 @@
-package com.gymlazy.lazyrestaurant;
+package com.gymlazy.lazyrestaurant.Controllers;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;

@@ -11,4 +11,6 @@
     <color name="razzmatazz">#dc1575</color>
     <color name="razzmatazz_50">#6e0a3a</color>
     <color name="second_white">#eefbfe</color>
+    <color name="selected_color">@color/second_white</color>
+    <color name="unselected_color">#a9a9a9</color>
 </resources>

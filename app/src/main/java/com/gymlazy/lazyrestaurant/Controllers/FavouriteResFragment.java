@@ -1,4 +1,4 @@
-package com.gymlazy.lazyrestaurant;
+package com.gymlazy.lazyrestaurant.Controllers;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -9,18 +9,20 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.gymlazy.lazyrestaurant.R;
+
 /**
  * Copyright: GymLazy All rights reserved
  *
  * @author michaelwoan97
  * Creation Date: 2021-06-07
- * Description: HomeFragment
+ * Description: FavouriteFragment
  */
-public class HomeFragment extends Fragment {
+public class FavouriteResFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.home_layout, container, false);
+        View v = inflater.inflate(R.layout.favourite_restaurants_layout, container, false);
         return v;
     }
 }

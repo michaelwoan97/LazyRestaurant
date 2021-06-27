@@ -4,4 +4,7 @@
     <string name="search_hint">(e.g. Waterloo)</string>
     <string name="search_text">SEARCH</string>
     <string name="search_around_you_text">SEARCH NEARBY</string>
+    <string name="name_restaurant_label">Banh Cuon Hieu Nghia</string>
+    <string name="res_nation_label">Vietnam</string>
+    <string name="rating_label">%1$.1f (%2$d reviews)</string>
 </resources>
