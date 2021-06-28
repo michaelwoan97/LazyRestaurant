@@ -1,8 +1,14 @@
 package com.gymlazy.lazyrestaurant.Controllers;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.media.Rating;
+import android.nfc.Tag;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,10 +53,35 @@ public class RestaurantListFragment extends Fragment {
     private List<Restaurant> mRestaurantList;
     private static final String TAG = "RestaurantListFragment";
 
+    private ThumbnailDownloader<RestaurantViewHolder> mThumbnailDownloader;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         new YelpRequest(RestaurantListFragment.this.getContext()).execute("Waterloo");
+
+        Handler responseHandler = new Handler(); // attached to main thread
+        mThumbnailDownloader = new ThumbnailDownloader<>(responseHandler);
+        mThumbnailDownloader.setThumbnailDownloadListener(
+                new ThumbnailDownloader.ThumbnailDownloadListener<RestaurantViewHolder>() {
+                    @Override
+                    public void onThumbnailDownloaded(RestaurantViewHolder target, Bitmap thumbnail) {
+                        Drawable drawable = new BitmapDrawable(getResources(), thumbnail);
+                        target.bindDrawable(drawable);
+                    }
+                }
+        );
+        mThumbnailDownloader.start();
+        mThumbnailDownloader.getLooper();
+        Log.i(TAG, "Background thread started");
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mThumbnailDownloader.quit();
+        mThumbnailDownloader.clearQueue();
+        Log.i(TAG, "Background thread destroyed");
     }
 
     @Nullable
@@ -65,23 +96,32 @@ public class RestaurantListFragment extends Fragment {
     }
 
     private class RestaurantViewHolder extends RecyclerView.ViewHolder{
+        private ImageView mResImg;
+        private TextView mResName;
+        private TextView mResTitle;
+        private RatingBar mResStar;
+        private TextView mResViewCount;
 
         public RestaurantViewHolder(LayoutInflater layoutInflater, ViewGroup parent) {
             super(layoutInflater.inflate(R.layout.restaurant_layout, parent, false));
 
-            mImageView = itemView.findViewById(R.id.res_image);
+            mResImg = itemView.findViewById(R.id.res_image);
             mResName = itemView.findViewById(R.id.res_name);
             mResTitle = itemView.findViewById(R.id.res_title);
-            mRatingBar = itemView.findViewById(R.id.res_rating);
-            mReviewCount = itemView.findViewById(R.id.res_review_count);
+            mResStar = itemView.findViewById(R.id.res_rating);
+            mResViewCount = itemView.findViewById(R.id.res_review_count);
 
         }
 
         public void bind(Restaurant restaurant){
             mResName.setText(restaurant.getName());
             mResTitle.setText(restaurant.getTitle());
-            mRatingBar.setRating(restaurant.getRating());
-            mReviewCount.setText(getString(R.string.rating_label, restaurant.getRating(), restaurant.getReviewCount()));
+            mResStar.setRating(restaurant.getRating());
+            mResViewCount.setText(getString(R.string.rating_label, restaurant.getRating(), restaurant.getReviewCount()));
+        }
+
+        public void bindDrawable(Drawable drawable) {
+            mResImg.setImageDrawable(drawable);
         }
     }
 
@@ -104,6 +144,7 @@ public class RestaurantListFragment extends Fragment {
         public void onBindViewHolder(@NonNull RestaurantViewHolder holder, int position) {
             Restaurant restaurant = mRestaurantList.get(position);
             holder.bind(restaurant);
+            mThumbnailDownloader.queueThumbnail(holder, restaurant.getImgURL());
         }
 
         @Override
