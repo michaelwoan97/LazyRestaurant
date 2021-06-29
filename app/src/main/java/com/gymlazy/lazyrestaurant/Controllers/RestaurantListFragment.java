@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -22,7 +23,11 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.room.Room;
 
+import com.gymlazy.lazyrestaurant.Models.Database.FavResDAO;
+import com.gymlazy.lazyrestaurant.Models.Database.FavResDatabase;
+import com.gymlazy.lazyrestaurant.Models.Database.RestaurantEntity;
 import com.gymlazy.lazyrestaurant.Models.Restaurant;
 import com.gymlazy.lazyrestaurant.Models.RestaurantList;
 import com.gymlazy.lazyrestaurant.R;
@@ -101,6 +106,7 @@ public class RestaurantListFragment extends Fragment {
         private TextView mResTitle;
         private RatingBar mResStar;
         private TextView mResViewCount;
+        private ImageButton mFavBtn;
 
         public RestaurantViewHolder(LayoutInflater layoutInflater, ViewGroup parent) {
             super(layoutInflater.inflate(R.layout.restaurant_layout, parent, false));
@@ -110,6 +116,17 @@ public class RestaurantListFragment extends Fragment {
             mResTitle = itemView.findViewById(R.id.res_title);
             mResStar = itemView.findViewById(R.id.res_rating);
             mResViewCount = itemView.findViewById(R.id.res_review_count);
+            mFavBtn = itemView.findViewById(R.id.res_fav_btn);
+            mFavBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(v.isSelected()){
+                        v.setSelected(false);
+                    } else {
+                        v.setSelected(true);
+                    }
+                }
+            });
 
         }
 
@@ -171,6 +188,16 @@ public class RestaurantListFragment extends Fragment {
 
         @Override
         protected List<Restaurant> doInBackground(String... strings) {
+            FavResDatabase database = Room.databaseBuilder(mContext, FavResDatabase.class, "FavResDB")
+                    .build();
+//            FavResDAO favResDAO = database.getFavResDAO();
+//
+//            RestaurantEntity testRestaurant = new RestaurantEntity();
+//            testRestaurant.setId("1");
+//            testRestaurant.setName("Hieu Nghia");
+//
+//            favResDAO.insert(testRestaurant);
+
             RestaurantList restaurantList = RestaurantList.get(mContext);
             List<Restaurant> restaurants = null;
 
