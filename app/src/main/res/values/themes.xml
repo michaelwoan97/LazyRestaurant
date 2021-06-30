@@ -14,4 +14,11 @@
         <!-- Customize your theme here. -->
         <item name="android:windowContentOverlay">@null</item>
     </style>
+
+    <style name="RatingBar" parent="Theme.AppCompat">
+        <item name="colorControlNormal">@color/lightGrey</item>
+        <item name="colorControlActivated">@color/rating_star</item>
+    </style>
+
+
 </resources>

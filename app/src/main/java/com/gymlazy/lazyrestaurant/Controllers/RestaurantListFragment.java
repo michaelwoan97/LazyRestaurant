@@ -17,6 +17,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -57,8 +58,13 @@ public class RestaurantListFragment extends Fragment {
     private RestaurantAdapter mRestaurantAdapter;
     private List<Restaurant> mRestaurantList;
     private static final String TAG = "RestaurantListFragment";
+    private FavResDatabase mFavResDatabase;
 
     private ThumbnailDownloader<RestaurantViewHolder> mThumbnailDownloader;
+
+    public FavResDatabase getFavResDatabase() {
+        return mFavResDatabase;
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -117,16 +123,7 @@ public class RestaurantListFragment extends Fragment {
             mResStar = itemView.findViewById(R.id.res_rating);
             mResViewCount = itemView.findViewById(R.id.res_review_count);
             mFavBtn = itemView.findViewById(R.id.res_fav_btn);
-            mFavBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if(v.isSelected()){
-                        v.setSelected(false);
-                    } else {
-                        v.setSelected(true);
-                    }
-                }
-            });
+
 
         }
 
@@ -135,10 +132,55 @@ public class RestaurantListFragment extends Fragment {
             mResTitle.setText(restaurant.getTitle());
             mResStar.setRating(restaurant.getRating());
             mResViewCount.setText(getString(R.string.rating_label, restaurant.getRating(), restaurant.getReviewCount()));
+            mFavBtn.setSelected(restaurant.isFavorite());
+            mFavBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(v.isSelected()){
+                        v.setSelected(false);
+                        new RemoveFavoriteRequest().execute(restaurant);
+                        Toast.makeText(itemView.getContext(), "Removed out of Favorite List", Toast.LENGTH_SHORT).show();
+                    } else {
+                        v.setSelected(true);
+                        new AddFavoriteRequest().execute(restaurant);
+                        Toast.makeText(itemView.getContext(), "Added to Favorite List", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
         }
 
         public void bindDrawable(Drawable drawable) {
             mResImg.setImageDrawable(drawable);
+        }
+
+        private class AddFavoriteRequest extends AsyncTask<Restaurant,Void,Void>{
+
+            @Override
+            protected Void doInBackground(Restaurant... restaurants) {
+                FavResDAO favResDAO = getFavResDatabase().getFavResDAO();
+
+                RestaurantEntity restaurantEntity = new RestaurantEntity();
+                restaurantEntity.setId(restaurants[0].getId());
+                restaurantEntity.setName(restaurants[0].getName());
+
+                favResDAO.insert(restaurantEntity);
+                return null;
+            }
+        }
+
+        private class RemoveFavoriteRequest extends AsyncTask<Restaurant,Void,Void>{
+
+            @Override
+            protected Void doInBackground(Restaurant... restaurants) {
+                FavResDAO favResDAO = getFavResDatabase().getFavResDAO();
+
+                RestaurantEntity restaurantEntity = new RestaurantEntity();
+                restaurantEntity.setId(restaurants[0].getId());
+                restaurantEntity.setName(restaurants[0].getName());
+
+                favResDAO.delete(restaurantEntity);
+                return null;
+            }
         }
     }
 
@@ -181,6 +223,7 @@ public class RestaurantListFragment extends Fragment {
 
     private class YelpRequest extends AsyncTask<String, Void, List<Restaurant>> {
         private Context mContext;
+        private FavResDatabase mDatabase;
 
         public YelpRequest(Context context) {
             mContext = context;
@@ -188,15 +231,8 @@ public class RestaurantListFragment extends Fragment {
 
         @Override
         protected List<Restaurant> doInBackground(String... strings) {
-            FavResDatabase database = Room.databaseBuilder(mContext, FavResDatabase.class, "FavResDB")
+            mDatabase = Room.databaseBuilder(mContext, FavResDatabase.class, "FavResDB")
                     .build();
-//            FavResDAO favResDAO = database.getFavResDAO();
-//
-//            RestaurantEntity testRestaurant = new RestaurantEntity();
-//            testRestaurant.setId("1");
-//            testRestaurant.setName("Hieu Nghia");
-//
-//            favResDAO.insert(testRestaurant);
 
             RestaurantList restaurantList = RestaurantList.get(mContext);
             List<Restaurant> restaurants = null;
@@ -214,12 +250,25 @@ public class RestaurantListFragment extends Fragment {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+
+            // check whether there are favorite restaurants
+            List<RestaurantEntity> favRestaurants = restaurantList.fetchFavoriteRestaurants(mDatabase);
+            for(Restaurant res : restaurants){
+                for(RestaurantEntity en : favRestaurants){
+                    String sEnId = en.getId();
+                    String sResId = res.getId();
+                    if(sResId.equals(sEnId)){
+                        res.setFavorite(true);
+                    }
+                }
+            }
             return restaurants;
         }
 
         @Override
         protected void onPostExecute(List<Restaurant> restaurants) {
             mRestaurantList = restaurants;
+            mFavResDatabase = mDatabase;
             setupAdapter();
         }
     }

@@ -13,4 +13,6 @@
     <color name="second_white">#eefbfe</color>
     <color name="selected_color">@color/second_white</color>
     <color name="unselected_color">#a9a9a9</color>
+    <color name="rating_star">#ffcc6f</color>
+    <color name="lightGrey">#d3d3d3</color>
 </resources>
