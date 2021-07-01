@@ -51,11 +51,13 @@ import java.util.List;
  */
 public class RestaurantListFragment extends Fragment {
     private static final String REQUEST_CODE = "REQUEST_CODE";
+    private static final String LOCATION_KEY = "LOCATION";
     private ImageView mImageView;
     private TextView mResName;
     private TextView mResTitle;
     private RatingBar mRatingBar;
     private TextView mReviewCount;
+    private TextView mErrRes;
     private RecyclerView mRecyclerView;
     private LinearLayout mProgressIndicator;
     private RestaurantAdapter mRestaurantAdapter;
@@ -63,6 +65,7 @@ public class RestaurantListFragment extends Fragment {
     private TextView mNoFavResLabel;
     private static final String TAG = "RestaurantListFragment";
     private FavResDatabase mFavResDatabase;
+    private String mLocation;
     private int mRequestCode;
     private int mNormalRequest = 0;
     private int mFavoriteRequest = 1;
@@ -93,10 +96,10 @@ public class RestaurantListFragment extends Fragment {
         return mFavResDatabase;
     }
 
-    public static Fragment newInstance(int requestCode){
+    public static Fragment newInstance(int requestCode, String location){
         Bundle b = new Bundle();
         b.putSerializable(REQUEST_CODE, requestCode);
-
+        b.putSerializable(LOCATION_KEY, location);
         RestaurantListFragment fragment = new RestaurantListFragment();
         fragment.setArguments(b);
         return fragment;
@@ -106,7 +109,8 @@ public class RestaurantListFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mRequestCode = (int) getArguments().getSerializable(REQUEST_CODE);
-        new YelpRequest(RestaurantListFragment.this.getContext()).execute("Waterloo");
+        mLocation = getArguments().getSerializable(LOCATION_KEY).toString();
+        new YelpRequest(RestaurantListFragment.this.getContext()).execute(mLocation);
 
         Handler responseHandler = new Handler(); // attached to main thread
         mThumbnailDownloader = new ThumbnailDownloader<>(responseHandler);
@@ -143,6 +147,8 @@ public class RestaurantListFragment extends Fragment {
         mProgressIndicator = v.findViewById(R.id.progress_indicator);
         mNoFavResLabel = (TextView) v.findViewById(R.id.no_fav_res);
         mNoFavResLabel.setVisibility(View.GONE);
+        mErrRes = (TextView) v.findViewById(R.id.err_restaurants);
+        mErrRes.setVisibility(View.GONE);
 
         return v;
     }
@@ -311,6 +317,10 @@ public class RestaurantListFragment extends Fragment {
                 try {
                     restaurants = restaurantList.fetchRestaurants(strings[0],0,0);
 
+                    // check whether the restaurant is empty
+                    if(restaurants.isEmpty() || restaurants == null){
+                        return null;
+                    }
                     for(Restaurant res : restaurants){
                         Log.d(TAG, res.getName() + "\n");
                     }
@@ -318,8 +328,11 @@ public class RestaurantListFragment extends Fragment {
 
                 } catch (IOException e) {
                     e.printStackTrace();
+                    return null;
+
                 } catch (JSONException e) {
                     e.printStackTrace();
+                    return null;
                 }
 
                 // check whether there are favorite restaurants
@@ -349,6 +362,11 @@ public class RestaurantListFragment extends Fragment {
 
         @Override
         protected void onPostExecute(List<Restaurant> restaurants) {
+            if(restaurants == null){
+                mProgressIndicator.setVisibility(View.GONE);
+                mErrRes.setVisibility(View.VISIBLE);
+                return;
+            }
             mRestaurantList = restaurants;
             mFavResDatabase = mDatabase;
 

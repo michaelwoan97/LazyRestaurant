@@ -24,7 +24,7 @@ public class FragmentAdapter extends FragmentStateAdapter {
     public Fragment createFragment(int position) {
 
         if(position == 1){
-            return RestaurantListFragment.newInstance(mFavCode);
+            return RestaurantListFragment.newInstance(mFavCode, "none");
         }
 
         return new HomeFragment();

@@ -8,4 +8,5 @@
     <string name="res_nation_label">Vietnam</string>
     <string name="rating_label">%1$.1f (%2$d reviews)</string>
     <string name="no_fav_res_label">Sorry, you do not have any favorite restaurants</string>
+    <string name="err_restaurants_label">Sorry, the provided location is invalid or something wrong has happened!</string>
 </resources>

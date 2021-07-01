@@ -17,11 +17,13 @@ import com.gymlazy.lazyrestaurant.R;
  */
 public class RestaurantListActivity extends SingleFragmentActivity {
     private static final String EXTRA_REQUEST_CODE = "com.gymlazy.lazyrestaurant.Controllers.RestauratnListActivity.request_code";
+    private static final String EXTRA_LOCATION = "com.gymlazy.lazyrestaurant.Controllers.RestauratnListActivity.location";
 
     @Override
     protected Fragment createFragment() {
         int requestCode = (int) getIntent().getSerializableExtra(EXTRA_REQUEST_CODE);
-        return RestaurantListFragment.newInstance(requestCode);
+        String location = getIntent().getSerializableExtra(EXTRA_LOCATION).toString();
+        return RestaurantListFragment.newInstance(requestCode, location);
     }
 
     @Override
@@ -46,9 +48,10 @@ public class RestaurantListActivity extends SingleFragmentActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public static Intent newIntent(Context packageContext, int requestCode){
+    public static Intent newIntent(Context packageContext, int requestCode, String location){
         Intent i = new Intent(packageContext, RestaurantListActivity.class);
         i.putExtra(EXTRA_REQUEST_CODE, requestCode);
+        i.putExtra(EXTRA_LOCATION, location);
         return i;
     }
 

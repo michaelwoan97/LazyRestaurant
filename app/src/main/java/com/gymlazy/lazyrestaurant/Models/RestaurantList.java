@@ -64,6 +64,11 @@ public class RestaurantList {
         List<Restaurant> restaurants = new ArrayList<Restaurant>();
         String sUrl = YelpAPI.createURL(sLocation, latitude, longitude);
         JSONObject response = YelpAPI.searchBusinesses(sUrl);
+
+        // check whether the user provide an invalid location
+        if(response.has("error")){
+            return null;
+        }
         parseItems(restaurants, response);
         return (mRestaurants = restaurants);
     }
