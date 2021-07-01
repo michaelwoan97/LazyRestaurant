@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -49,16 +50,42 @@ import java.util.List;
  * Description: RestaurantListFragment
  */
 public class RestaurantListFragment extends Fragment {
+    private static final String REQUEST_CODE = "REQUEST_CODE";
     private ImageView mImageView;
     private TextView mResName;
     private TextView mResTitle;
     private RatingBar mRatingBar;
     private TextView mReviewCount;
     private RecyclerView mRecyclerView;
+    private LinearLayout mProgressIndicator;
     private RestaurantAdapter mRestaurantAdapter;
     private List<Restaurant> mRestaurantList;
+    private TextView mNoFavResLabel;
     private static final String TAG = "RestaurantListFragment";
     private FavResDatabase mFavResDatabase;
+    private int mRequestCode;
+    private int mNormalRequest = 0;
+    private int mFavoriteRequest = 1;
+
+    public int getRequestCode() {
+        return mRequestCode;
+    }
+
+    public int getNormalRequest() {
+        return mNormalRequest;
+    }
+
+    public int getFavoriteRequest() {
+        return mFavoriteRequest;
+    }
+
+    public List<Restaurant> getRestaurantList() {
+        return mRestaurantList;
+    }
+
+    public void setRestaurantList(List<Restaurant> restaurantList) {
+        mRestaurantList = restaurantList;
+    }
 
     private ThumbnailDownloader<RestaurantViewHolder> mThumbnailDownloader;
 
@@ -66,9 +93,19 @@ public class RestaurantListFragment extends Fragment {
         return mFavResDatabase;
     }
 
+    public static Fragment newInstance(int requestCode){
+        Bundle b = new Bundle();
+        b.putSerializable(REQUEST_CODE, requestCode);
+
+        RestaurantListFragment fragment = new RestaurantListFragment();
+        fragment.setArguments(b);
+        return fragment;
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mRequestCode = (int) getArguments().getSerializable(REQUEST_CODE);
         new YelpRequest(RestaurantListFragment.this.getContext()).execute("Waterloo");
 
         Handler responseHandler = new Handler(); // attached to main thread
@@ -102,9 +139,15 @@ public class RestaurantListFragment extends Fragment {
 
         mRecyclerView = (RecyclerView) v.findViewById(R.id.restaurant_recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        mRecyclerView.setVisibility(View.GONE);
+        mProgressIndicator = v.findViewById(R.id.progress_indicator);
+        mNoFavResLabel = (TextView) v.findViewById(R.id.no_fav_res);
+        mNoFavResLabel.setVisibility(View.GONE);
 
         return v;
     }
+
+
 
     private class RestaurantViewHolder extends RecyclerView.ViewHolder{
         private ImageView mResImg;
@@ -168,10 +211,10 @@ public class RestaurantListFragment extends Fragment {
             }
         }
 
-        private class RemoveFavoriteRequest extends AsyncTask<Restaurant,Void,Void>{
+        private class RemoveFavoriteRequest extends AsyncTask<Restaurant,Void,Restaurant>{
 
             @Override
-            protected Void doInBackground(Restaurant... restaurants) {
+            protected Restaurant doInBackground(Restaurant... restaurants) {
                 FavResDAO favResDAO = getFavResDatabase().getFavResDAO();
 
                 RestaurantEntity restaurantEntity = new RestaurantEntity();
@@ -179,7 +222,27 @@ public class RestaurantListFragment extends Fragment {
                 restaurantEntity.setName(restaurants[0].getName());
 
                 favResDAO.delete(restaurantEntity);
-                return null;
+                return restaurants[0];
+            }
+
+            @Override
+            protected void onPostExecute(Restaurant restaurant) {
+                if(getRequestCode() == mFavoriteRequest){
+                    List<Restaurant> favRestaurants = getRestaurantList();
+                    int positionRemove = favRestaurants.indexOf(restaurant);
+                    favRestaurants.remove(restaurant);
+                    refreshAdapter(positionRemove);
+
+                    // check whether the favorite restaurants is empty
+                    if(getRequestCode() == getFavoriteRequest()){
+                        if(mRestaurantList.isEmpty()){
+                            mProgressIndicator.setVisibility(ViewGroup.GONE);
+                            mRecyclerView.setVisibility(View.GONE);
+                            mNoFavResLabel.setVisibility(View.VISIBLE);
+                            return;
+                        }
+                    }
+                }
             }
         }
     }
@@ -221,6 +284,12 @@ public class RestaurantListFragment extends Fragment {
         }
     }
 
+    private void refreshAdapter(int position){
+        if(mRestaurantAdapter != null){
+            mRestaurantAdapter.notifyItemRemoved(position);
+        }
+    }
+
     private class YelpRequest extends AsyncTask<String, Void, List<Restaurant>> {
         private Context mContext;
         private FavResDatabase mDatabase;
@@ -237,31 +306,44 @@ public class RestaurantListFragment extends Fragment {
             RestaurantList restaurantList = RestaurantList.get(mContext);
             List<Restaurant> restaurants = null;
 
-            try {
-                restaurants = restaurantList.fetchRestaurants(strings[0],0,0);
+            // check whether fetching restaurants for favorite fragment or restaurant list fragment
+            if(getRequestCode() == getNormalRequest()){
+                try {
+                    restaurants = restaurantList.fetchRestaurants(strings[0],0,0);
 
-                for(Restaurant res : restaurants){
-                    Log.d(TAG, res.getName() + "\n");
+                    for(Restaurant res : restaurants){
+                        Log.d(TAG, res.getName() + "\n");
+                    }
+
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
 
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-            // check whether there are favorite restaurants
-            List<RestaurantEntity> favRestaurants = restaurantList.fetchFavoriteRestaurants(mDatabase);
-            for(Restaurant res : restaurants){
-                for(RestaurantEntity en : favRestaurants){
-                    String sEnId = en.getId();
-                    String sResId = res.getId();
-                    if(sResId.equals(sEnId)){
-                        res.setFavorite(true);
+                // check whether there are favorite restaurants
+                List<RestaurantEntity> favRestaurants = restaurantList.fetchFavoriteRestaurants(mDatabase);
+                for(Restaurant res : restaurants){
+                    for(RestaurantEntity en : favRestaurants){
+                        String sEnId = en.getId();
+                        String sResId = res.getId();
+                        if(sResId.equals(sEnId)){
+                            res.setFavorite(true);
+                        }
                     }
                 }
+            } else {
+                List<RestaurantEntity> favRestaurants = restaurantList.fetchFavoriteRestaurants(mDatabase);
+                try {
+                    restaurants = restaurantList.fetchFavoriteRestaurants(favRestaurants);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
+
             return restaurants;
         }
 
@@ -269,7 +351,20 @@ public class RestaurantListFragment extends Fragment {
         protected void onPostExecute(List<Restaurant> restaurants) {
             mRestaurantList = restaurants;
             mFavResDatabase = mDatabase;
+
+            if(getRequestCode() == getFavoriteRequest()){
+                if(mRestaurantList.isEmpty()){
+                    mProgressIndicator.setVisibility(ViewGroup.GONE);
+                    mNoFavResLabel.setVisibility(View.VISIBLE);
+                    return;
+                }
+            }
+
             setupAdapter();
+
+            // hide progress bar and display hotel data
+            mProgressIndicator.setVisibility(ViewGroup.GONE);
+            mRecyclerView.setVisibility(View.VISIBLE);
         }
     }
 

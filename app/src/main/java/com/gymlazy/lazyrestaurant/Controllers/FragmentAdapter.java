@@ -14,6 +14,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
  * Description: FragmentAdapter
  */
 public class FragmentAdapter extends FragmentStateAdapter {
+    private static final int mFavCode = 1;
     public FragmentAdapter(@NonNull FragmentManager fragmentManager, @NonNull Lifecycle lifecycle) {
         super(fragmentManager, lifecycle);
     }
@@ -23,7 +24,7 @@ public class FragmentAdapter extends FragmentStateAdapter {
     public Fragment createFragment(int position) {
 
         if(position == 1){
-            return new FavouriteResFragment();
+            return RestaurantListFragment.newInstance(mFavCode);
         }
 
         return new HomeFragment();

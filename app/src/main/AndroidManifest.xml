@@ -18,7 +18,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".Controllers.RestaurantListActivity">
+        <activity android:name=".Controllers.RestaurantListActivity"
+            android:parentActivityName=".Controllers.MainActivity">
 
         </activity>
     </application>

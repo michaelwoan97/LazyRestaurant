@@ -27,6 +27,7 @@ import java.net.URL;
  */
 public class YelpAPI {
     public static final String SEARCH_BUSINESS_URL = "https://api.yelp.com/v3/businesses/search";
+    public static final String SEARCH_BUSINESS_DETAIL_URL = "https://api.yelp.com/v3/businesses/";
     public static final String TERM_PARAM = "term";
     public static final String LOCATION_PARAM = "location";
     public static final String LATITUDE_PARAM = "latitude";
@@ -61,6 +62,14 @@ public class YelpAPI {
         return builtUri.toString();
     }
 
+    /**
+     * create url for searching business detail
+     * @param id
+     * @return
+     */
+    public static String createURLBusinessDetail(String id){
+        return SEARCH_BUSINESS_DETAIL_URL + id;
+    }
 
 
     public static JSONObject searchBusinesses(String sUrl) throws IOException, JSONException {
@@ -100,6 +109,6 @@ public class YelpAPI {
         return (jsonResponse = new JSONObject(out.toString()));
     }
 
-    // parse items
+
 
 }

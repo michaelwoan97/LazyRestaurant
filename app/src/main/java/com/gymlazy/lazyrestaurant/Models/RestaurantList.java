@@ -27,6 +27,7 @@ import java.util.List;
 public class RestaurantList {
     private static RestaurantList sRestaurantList;
     private List<Restaurant> mRestaurants;
+    private List<Restaurant> mFavRestaurants;
     private Context mContext;
 
     public static RestaurantList get(Context context){
@@ -79,6 +80,38 @@ public class RestaurantList {
         // fetch all the favorite restaurants
         List<RestaurantEntity> restaurantEntities = favResDAO.getRestaurants();
         return restaurantEntities;
+    }
+
+    /**
+     * fetch favorite restaurants with more info
+     * @param favRestaurantEntities
+     * @return
+     * @throws IOException
+     * @throws JSONException
+     */
+    public List<Restaurant> fetchFavoriteRestaurants(List<RestaurantEntity> favRestaurantEntities) throws IOException, JSONException {
+        List<Restaurant> favRestaurants = new ArrayList<>();
+        for(RestaurantEntity res : favRestaurantEntities){
+            String url = YelpAPI.createURLBusinessDetail(res.getId());
+            JSONObject joResponse = YelpAPI.searchBusinesses(url);
+
+            Restaurant restaurant = new Restaurant();
+            restaurant.setId(joResponse.getString("id"));
+            restaurant.setName(joResponse.getString("name"));
+            restaurant.setImgURL(joResponse.getString("image_url"));
+            restaurant.setTitle(joResponse.getJSONArray("categories").getJSONObject(0).getString("title"));
+            restaurant.setRating((float) joResponse.getDouble("rating"));
+            restaurant.setReviewCount(joResponse.getInt("review_count"));
+            restaurant.setAddress(new String[]{joResponse.getJSONObject("location").getJSONArray("display_address").getString(0),joResponse.getJSONObject("location").getJSONArray("display_address").getString(1)});
+            restaurant.setPhone(joResponse.getString("display_phone"));
+            restaurant.setCoordinates(new double[]{joResponse.getJSONObject("coordinates").getDouble("latitude"), joResponse.getJSONObject("coordinates").getDouble("longitude")});
+
+            restaurant.setFavorite(true);
+
+            favRestaurants.add(restaurant);
+        }
+
+        return (mFavRestaurants = favRestaurants);
     }
 
     public void parseItems(List<Restaurant> lRestaurant, JSONObject jsonBody) throws JSONException {

@@ -33,6 +33,7 @@ import java.util.List;
 public class HomeFragment extends Fragment {
     private Button mSearchBtn;
     private static final String TAG = "HomeFragment";
+    private int mNormalRequest = 0;
 
     @Nullable
     @Override
@@ -43,9 +44,9 @@ public class HomeFragment extends Fragment {
         mSearchBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(HomeFragment.this.getContext(), RestaurantListActivity.class);
+                Intent i = RestaurantListActivity.newIntent(HomeFragment.this.getContext(), mNormalRequest);
                 startActivity(i);
-
+                HomeFragment.this.getActivity().overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
             }
         });
 
