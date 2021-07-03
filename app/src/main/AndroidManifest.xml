@@ -25,6 +25,11 @@
             android:parentActivityName=".Controllers.MainActivity">
 
         </activity>
+
+        <activity android:name=".Controllers.ResDetailActivity"
+            android:parentActivityName=".Controllers.RestaurantListActivity">
+
+        </activity>
     </application>
 
 </manifest>

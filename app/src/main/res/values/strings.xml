@@ -9,4 +9,8 @@
     <string name="rating_label">%1$.1f (%2$d reviews)</string>
     <string name="no_fav_res_label">Sorry, you do not have any favorite restaurants</string>
     <string name="err_restaurants_label">Sorry, the provided location is invalid or something wrong has happened!</string>
+    <string name="res_address_label">122 Race Course Rd, Singapore 218583</string>
+    <string name="res_food_rating_label">Food Rating</string>
+    <string name="price_label">$$$</string>
+    <string name="res_price_rating_label">Price Rating</string>
 </resources>

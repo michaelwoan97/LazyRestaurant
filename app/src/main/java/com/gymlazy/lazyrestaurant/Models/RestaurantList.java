@@ -30,6 +30,10 @@ public class RestaurantList {
     private List<Restaurant> mFavRestaurants;
     private Context mContext;
 
+    public static enum RequestCodes{
+        ALL,
+        DETAIL
+    }
     public static RestaurantList get(Context context){
         // check whether the singleton is exits
         if(sRestaurantList == null){
@@ -73,6 +77,18 @@ public class RestaurantList {
         return (mRestaurants = restaurants);
     }
 
+    public Restaurant fetchRestaurantDetail(String sResID) throws IOException, JSONException {
+        Restaurant restaurant = null;
+        String sUrl = YelpAPI.createURLBusinessDetail(sResID);
+        JSONObject response = YelpAPI.searchBusinesses(sUrl);
+
+        // check whether the user provide an invalid location
+        if(response.has("error")){
+            return null;
+        }
+        restaurant = getRestaurantFromResponse(response);
+        return restaurant;
+    }
 
     /**
      * fetch all favorite restaurants from database (can only use in background thread)
@@ -125,25 +141,89 @@ public class RestaurantList {
         for(int i = 0; i < jaBusinesses.length(); i++){
             JSONObject joRestaurant = jaBusinesses.getJSONObject(i);
 
-            Restaurant restaurant = new Restaurant();
-            restaurant.setId(joRestaurant.getString("id"));
-            restaurant.setName(joRestaurant.getString("name"));
-            restaurant.setImgURL(joRestaurant.getString("image_url"));
-            restaurant.setTitle(joRestaurant.getJSONArray("categories").getJSONObject(0).getString("title"));
-            restaurant.setRating((float) joRestaurant.getDouble("rating"));
-            restaurant.setReviewCount(joRestaurant.getInt("review_count"));
-            restaurant.setAddress(new String[]{joRestaurant.getJSONObject("location").getJSONArray("display_address").getString(0),joRestaurant.getJSONObject("location").getJSONArray("display_address").getString(1)});
-            restaurant.setPhone(joRestaurant.getString("display_phone"));
-            restaurant.setCoordinates(new double[]{joRestaurant.getJSONObject("coordinates").getDouble("latitude"), joRestaurant.getJSONObject("coordinates").getDouble("longitude")});
-            restaurant.setDistance(joRestaurant.getDouble("distance"));
-
-            // check whether the object has favorite field
-            if(!joRestaurant.has("is_favorite")){
-                restaurant.setFavorite(false);
-            }
+            Restaurant restaurant = getRestaurantFromResponse(joRestaurant);
 
             lRestaurant.add(restaurant);
         }
 
+    }
+
+
+
+    public Restaurant getRestaurantFromResponse(JSONObject joRestaurant) throws JSONException {
+        Restaurant restaurant = new Restaurant();
+        restaurant.setId(joRestaurant.getString("id"));
+        restaurant.setName(joRestaurant.getString("name"));
+        restaurant.setImgURL(joRestaurant.getString("image_url"));
+        restaurant.setTitle(joRestaurant.getJSONArray("categories").getJSONObject(0).getString("title"));
+        restaurant.setRating((float) joRestaurant.getDouble("rating"));
+        restaurant.setReviewCount(joRestaurant.getInt("review_count"));
+        restaurant.setAddress(new String[]{joRestaurant.getJSONObject("location").getJSONArray("display_address").getString(0),joRestaurant.getJSONObject("location").getJSONArray("display_address").getString(1)});
+        restaurant.setPhone(joRestaurant.getString("display_phone"));
+        restaurant.setCoordinates(new double[]{joRestaurant.getJSONObject("coordinates").getDouble("latitude"), joRestaurant.getJSONObject("coordinates").getDouble("longitude")});
+
+
+        // check whether the object has favorite field
+        if(!joRestaurant.has("is_favorite")){
+            restaurant.setFavorite(false);
+        }
+
+        if(joRestaurant.has("distance")){
+            restaurant.setDistance(joRestaurant.getDouble("distance"));
+        } else {
+            restaurant.setDistance(0);
+        }
+
+        // check whether the response has photos, price, and open hours field
+        if(joRestaurant.has("price")){
+            restaurant.setPrice(joRestaurant.getString("price"));
+        } else {
+            restaurant.setPrice(null);
+        }
+
+        if(joRestaurant.has("photos")){
+            ArrayList<String> stringArray = getStringArrayList(joRestaurant, "photos");
+            restaurant.setPhotos(stringArray);
+        } else {
+            restaurant.setPhotos(null);
+        }
+
+        if(joRestaurant.has("hours")){
+            ArrayList<ResHours> hours = new ArrayList<ResHours>();
+            JSONArray jsonArray = joRestaurant.getJSONArray("hours").getJSONObject(0).getJSONArray("open");
+            for(int j = 0, count = jsonArray.length(); j < count; j++)
+            {
+                try {
+                    JSONObject object = jsonArray.getJSONObject(j);
+                    ResHours hour = new ResHours();
+                    hour.setHourStart(object.getString("start"));
+                    hour.setHourEnd(object.getString("end"));
+                    hours.add(hour);
+                }
+                catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            restaurant.setResHours(hours);
+        } else {
+            restaurant.setResHours(null);
+        }
+        return restaurant;
+    }
+
+    public ArrayList<String> getStringArrayList(JSONObject jsonObject,String sJsonArray) throws JSONException {
+        ArrayList<String> stringArray = new ArrayList<String>();
+        JSONArray jsonArray = jsonObject.getJSONArray(sJsonArray);
+        for(int j = 0, count = jsonArray.length(); j < count; j++)
+        {
+            try {
+                String object = jsonArray.getString(j);
+                stringArray.add(object);
+            }
+            catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return stringArray;
     }
 }

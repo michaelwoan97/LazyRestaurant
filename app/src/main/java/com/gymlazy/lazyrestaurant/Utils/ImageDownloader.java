@@ -59,7 +59,7 @@ public class ImageDownloader {
             connection.disconnect();
         }
 
-        // convert byte array to bitmap
+
         bOutImg = out.toByteArray();
         return bOutImg;
     }

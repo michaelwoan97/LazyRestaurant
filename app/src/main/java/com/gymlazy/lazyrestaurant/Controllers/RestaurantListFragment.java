@@ -1,6 +1,7 @@
 package com.gymlazy.lazyrestaurant.Controllers;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -22,6 +23,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -162,11 +164,13 @@ public class RestaurantListFragment extends Fragment {
         private RatingBar mResStar;
         private TextView mResViewCount;
         private ImageButton mFavBtn;
+        private ConstraintLayout mResInfo;
 
         public RestaurantViewHolder(LayoutInflater layoutInflater, ViewGroup parent) {
             super(layoutInflater.inflate(R.layout.restaurant_layout, parent, false));
 
             mResImg = itemView.findViewById(R.id.res_image);
+            mResInfo = itemView.findViewById(R.id.res_detail);
             mResName = itemView.findViewById(R.id.res_name);
             mResTitle = itemView.findViewById(R.id.res_title);
             mResStar = itemView.findViewById(R.id.res_rating);
@@ -177,6 +181,18 @@ public class RestaurantListFragment extends Fragment {
         }
 
         public void bind(Restaurant restaurant){
+            mResImg.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    seeInfoRes(restaurant.getId());
+                }
+            });
+            mResInfo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    seeInfoRes(restaurant.getId());
+                }
+            });
             mResName.setText(restaurant.getName());
             mResTitle.setText(restaurant.getTitle());
             mResStar.setRating(restaurant.getRating());
@@ -200,6 +216,12 @@ public class RestaurantListFragment extends Fragment {
 
         public void bindDrawable(Drawable drawable) {
             mResImg.setImageDrawable(drawable);
+        }
+
+        public void seeInfoRes(String sResID) {
+            Intent i = ResDetailActivity.newIntent(itemView.getContext(), sResID);
+            startActivity(i);
+            RestaurantListFragment.this.getActivity().overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         }
 
         private class AddFavoriteRequest extends AsyncTask<Restaurant,Void,Void>{

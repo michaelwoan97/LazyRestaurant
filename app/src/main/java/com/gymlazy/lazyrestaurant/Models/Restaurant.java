@@ -1,5 +1,7 @@
 package com.gymlazy.lazyrestaurant.Models;
 
+import java.util.ArrayList;
+
 /**
  * Copyright: GymLazy All rights reserved
  *
@@ -19,6 +21,10 @@ public class Restaurant {
     private double[] mCoordinates = new double[2];
     private double mDistance;
     private boolean mIsFavorite;
+
+    private ArrayList<String> mPhotos;
+    private String mPrice;
+    private ArrayList<ResHours> mResHours;
 
     public String getId() {
         return mId;
@@ -106,5 +112,29 @@ public class Restaurant {
 
     public void setFavorite(boolean favorite) {
         mIsFavorite = favorite;
+    }
+
+    public ArrayList<String> getPhotos() {
+        return mPhotos;
+    }
+
+    public void setPhotos(ArrayList<String> photos) {
+        mPhotos = photos;
+    }
+
+    public String getPrice() {
+        return mPrice;
+    }
+
+    public void setPrice(String price) {
+        mPrice = price;
+    }
+
+    public ArrayList<ResHours> getResHours() {
+        return mResHours;
+    }
+
+    public void setResHours(ArrayList<ResHours> resHours) {
+        mResHours = resHours;
     }
 }
