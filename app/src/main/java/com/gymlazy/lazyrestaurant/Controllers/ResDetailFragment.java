@@ -1,19 +1,26 @@
 package com.gymlazy.lazyrestaurant.Controllers;
 
 import android.content.Context;
+import android.media.Rating;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RatingBar;
+import android.widget.ScrollView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
+import com.gymlazy.lazyrestaurant.Models.ResHours;
 import com.gymlazy.lazyrestaurant.Models.Restaurant;
 import com.gymlazy.lazyrestaurant.Models.RestaurantList;
 import com.gymlazy.lazyrestaurant.R;
@@ -24,6 +31,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,7 +48,15 @@ public class ResDetailFragment extends Fragment {
     private ViewAdapter mViewAdapter;
     private ViewPager mViewPager;
     private LinearLayout mProgressLayout;
+    private LinearLayout mResNameDetailLayout;
     private Restaurant mRestaurant;
+    private TextView mResName;
+    private TextView mResAddress;
+    private RatingBar mFoodRating;
+    private TextView mPriceRating;
+    private TextView mWorkingHours;
+    private LinearLayout mResInfoDetail;
+
 
     public static Fragment newInstance(String sResID){
         Bundle b = new Bundle();
@@ -68,6 +85,16 @@ public class ResDetailFragment extends Fragment {
         mViewPager.setVisibility(View.GONE);
         mDotsIndicator.setVisibility(View.GONE);
 
+        mResName = (TextView) v.findViewById(R.id.res_name_detail);
+        mResAddress = (TextView) v.findViewById(R.id.res_address_detail);
+        mFoodRating = (RatingBar) v.findViewById(R.id.res_rating_detail);
+        mPriceRating = (TextView) v.findViewById(R.id.res_price_rating_detail);
+        mWorkingHours = (TextView) v.findViewById(R.id.res_working_hours_detail);
+        mResInfoDetail = (LinearLayout) v.findViewById(R.id.res_info_detail);
+        mResInfoDetail.setVisibility(View.GONE);
+        mResNameDetailLayout = (LinearLayout) v.findViewById(R.id.res_name_detail_layout);
+        mResNameDetailLayout.setVisibility(View.GONE);
+
         return v;
     }
 
@@ -75,6 +102,29 @@ public class ResDetailFragment extends Fragment {
         mViewAdapter = new ViewAdapter(this.getContext(), mRestaurant);
         mViewPager.setAdapter(mViewAdapter);
         mDotsIndicator.setViewPager(mViewPager);
+    }
+
+    /**
+     * get working hours of a restaurant
+     * @param arlWorkingHours
+     * @return
+     * @throws ParseException
+     */
+    public String getWorkingHourSchedule(ArrayList<ResHours> arlWorkingHours) throws ParseException {
+        ArrayList<String> arlWorkingHourString = new ArrayList<>();
+        String sWorkingHour = "";
+
+        for(ResHours t : arlWorkingHours){
+            arlWorkingHourString.add(t.getWorkingHours());
+        }
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            sWorkingHour = String.join("\n", arlWorkingHourString);
+        } else {
+            sWorkingHour = TextUtils.join("\n", arlWorkingHourString);
+        }
+
+        return sWorkingHour;
     }
 
     private class YelpRequest extends AsyncTask<String, Void, Restaurant>{
@@ -103,11 +153,31 @@ public class ResDetailFragment extends Fragment {
 
         @Override
         protected void onPostExecute(Restaurant restaurant) {
-            mProgressLayout.setVisibility(View.GONE);
-            mViewPager.setVisibility(View.VISIBLE);
-            mDotsIndicator.setVisibility(View.VISIBLE);
             mRestaurant = restaurant;
             setupAdapter();
+            mResName.setText(restaurant.getName());
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                mResAddress.setText(String.join(", ", restaurant.getAddress()));
+            } else {
+                String[] resAddress = restaurant.getAddress();
+                String sResAddress = TextUtils.join(", ", resAddress);
+                mResAddress.setText(sResAddress);
+            }
+            try {
+                mWorkingHours.setText(getWorkingHourSchedule(restaurant.getResHours()));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            mFoodRating.setRating(restaurant.getRating());
+            mPriceRating.setText(restaurant.getPrice());
+            mProgressLayout.setVisibility(View.GONE);
+            mResNameDetailLayout.setVisibility(View.VISIBLE);
+            mViewPager.setVisibility(View.VISIBLE);
+            mDotsIndicator.setVisibility(View.VISIBLE);
+            mResInfoDetail.setVisibility(View.VISIBLE);
+
+
         }
     }
 }
