@@ -41,8 +41,10 @@ public class ResDetailActivity extends SingleFragmentActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 // Respond to the action bar's Up/Home button
-                super.onBackPressed();
+                onBackPressed();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
 }

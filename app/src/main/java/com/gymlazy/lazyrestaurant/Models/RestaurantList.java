@@ -130,6 +130,7 @@ public class RestaurantList {
             restaurant.setId(joResponse.getString("id"));
             restaurant.setName(joResponse.getString("name"));
             restaurant.setImgURL(joResponse.getString("image_url"));
+            restaurant.setResWebURL(joResponse.getString("url"));
             restaurant.setTitle(joResponse.getJSONArray("categories").getJSONObject(0).getString("title"));
             restaurant.setRating((float) joResponse.getDouble("rating"));
             restaurant.setReviewCount(joResponse.getInt("review_count"));
@@ -165,6 +166,7 @@ public class RestaurantList {
         restaurant.setId(joRestaurant.getString("id"));
         restaurant.setName(joRestaurant.getString("name"));
         restaurant.setImgURL(joRestaurant.getString("image_url"));
+        restaurant.setResWebURL(joRestaurant.getString("url"));
         restaurant.setTitle(joRestaurant.getJSONArray("categories").getJSONObject(0).getString("title"));
         restaurant.setRating((float) joRestaurant.getDouble("rating"));
         restaurant.setReviewCount(joRestaurant.getInt("review_count"));

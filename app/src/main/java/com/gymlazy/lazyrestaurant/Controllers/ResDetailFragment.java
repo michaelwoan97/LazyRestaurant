@@ -1,7 +1,9 @@
 package com.gymlazy.lazyrestaurant.Controllers;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.graphics.SweepGradient;
 import android.graphics.drawable.Drawable;
 import android.media.Rating;
 import android.os.AsyncTask;
@@ -9,6 +11,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -27,6 +32,7 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.gymlazy.lazyrestaurant.MapsActivity;
 import com.gymlazy.lazyrestaurant.Models.Database.FavResDAO;
 import com.gymlazy.lazyrestaurant.Models.Database.RestaurantEntity;
 import com.gymlazy.lazyrestaurant.Models.ResHours;
@@ -53,6 +59,7 @@ import java.util.List;
  */
 public class ResDetailFragment extends Fragment {
     private static final String RES_ID_KEY = "resID";
+    private static final String RES_URL = "restaurant_url";
     private DotsIndicator mDotsIndicator;
     private ViewAdapter mViewAdapter;
     private ViewPager mViewPager;
@@ -66,6 +73,7 @@ public class ResDetailFragment extends Fragment {
     private TextView mWorkingHours;
     private LinearLayout mResInfoDetail;
     private FloatingActionButton mFavBtn;
+    private FloatingActionButton mLocationBtn;
 
     public static Fragment newInstance(String sResID){
         Bundle b = new Bundle();
@@ -79,8 +87,18 @@ public class ResDetailFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
         String sResID = getArguments().getString(RES_ID_KEY).toString();
         new YelpRequest(this.getContext()).execute(sResID);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        menu.clear();
+
+        inflater.inflate(R.menu.res_detail_menu, menu);
+
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Nullable
@@ -104,8 +122,28 @@ public class ResDetailFragment extends Fragment {
         mResNameDetailLayout = (LinearLayout) v.findViewById(R.id.res_name_detail_layout);
         mResNameDetailLayout.setVisibility(View.GONE);
         mFavBtn = (FloatingActionButton) v.findViewById(R.id.res_favorite_detail_button);
+        mLocationBtn = (FloatingActionButton) v.findViewById(R.id.res_location_detail_button);
+        mFavBtn.hide();
+        mLocationBtn.hide();
 
         return v;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.share_detail:
+                Intent sendIntent = new Intent();
+                sendIntent.setAction(Intent.ACTION_SEND);
+                sendIntent.putExtra(Intent.EXTRA_TEXT, mRestaurant.getResWebURL());
+                sendIntent.setType("text/plain");
+
+                Intent shareIntent = Intent.createChooser(sendIntent, null);
+                startActivity(shareIntent);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     public void setupAdapter() {
@@ -198,12 +236,21 @@ public class ResDetailFragment extends Fragment {
                     }
                 }
             });
+            mLocationBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent i = MapsActivity.newIntent(mContext, mRestaurant.getCoordinates());
+                    startActivity(i);
+                    ResDetailFragment.this.getActivity().overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                }
+            });
             mProgressLayout.setVisibility(View.GONE);
             mResNameDetailLayout.setVisibility(View.VISIBLE);
             mViewPager.setVisibility(View.VISIBLE);
             mDotsIndicator.setVisibility(View.VISIBLE);
             mResInfoDetail.setVisibility(View.VISIBLE);
-
+            mFavBtn.show();
+            mLocationBtn.show();
 
         }
     }

@@ -12,6 +12,7 @@ import java.util.ArrayList;
 public class Restaurant {
     private String mId;
     private String mName;
+    private String mResWebURL;
     private String mImgURL;
     private String mTitle;
     private Float mRating;
@@ -40,6 +41,14 @@ public class Restaurant {
 
     public void setName(String name) {
         mName = name;
+    }
+
+    public String getResWebURL() {
+        return mResWebURL;
+    }
+
+    public void setResWebURL(String resWebURL) {
+        mResWebURL = resWebURL;
     }
 
     public String getImgURL() {

@@ -161,9 +161,6 @@ public class RestaurantListFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if(mRestaurantAdapter != null){
-            mRestaurantAdapter.notifyDataSetChanged();
-        }
     }
 
     @Override
