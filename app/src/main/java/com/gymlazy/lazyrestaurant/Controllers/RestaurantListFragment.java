@@ -71,6 +71,7 @@ public class RestaurantListFragment extends Fragment {
     private int mRequestCode;
     private int mNormalRequest = 0;
     private int mFavoriteRequest = 1;
+    private static final int SEE_RES_DETAIL = 3;
 
     public int getRequestCode() {
         return mRequestCode;
@@ -106,6 +107,8 @@ public class RestaurantListFragment extends Fragment {
         fragment.setArguments(b);
         return fragment;
     }
+
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -155,7 +158,26 @@ public class RestaurantListFragment extends Fragment {
         return v;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(mRestaurantAdapter != null){
+            mRestaurantAdapter.notifyDataSetChanged();
+        }
+    }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        mProgressIndicator.setVisibility(ViewGroup.VISIBLE);
+        mRecyclerView.setVisibility(View.GONE);
+        if(requestCode == SEE_RES_DETAIL){
+            mRestaurantList = RestaurantList.get(this.getContext()).getRestaurants();
+            setupAdapter();
+        }
+        mProgressIndicator.setVisibility(ViewGroup.GONE);
+        mRecyclerView.setVisibility(View.VISIBLE);
+    }
 
     private class RestaurantViewHolder extends RecyclerView.ViewHolder{
         private ImageView mResImg;
@@ -220,7 +242,7 @@ public class RestaurantListFragment extends Fragment {
 
         public void seeInfoRes(String sResID) {
             Intent i = ResDetailActivity.newIntent(itemView.getContext(), sResID);
-            startActivity(i);
+            startActivityForResult(i, SEE_RES_DETAIL);
             RestaurantListFragment.this.getActivity().overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         }
 
@@ -328,10 +350,8 @@ public class RestaurantListFragment extends Fragment {
 
         @Override
         protected List<Restaurant> doInBackground(String... strings) {
-            mDatabase = Room.databaseBuilder(mContext, FavResDatabase.class, "FavResDB")
-                    .build();
-
             RestaurantList restaurantList = RestaurantList.get(mContext);
+            mDatabase = restaurantList.getDatabase();
             List<Restaurant> restaurants = null;
 
             // check whether fetching restaurants for favorite fragment or restaurant list fragment

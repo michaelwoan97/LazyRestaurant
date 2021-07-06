@@ -1,6 +1,8 @@
 package com.gymlazy.lazyrestaurant.Controllers;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.graphics.drawable.Drawable;
 import android.media.Rating;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -14,12 +16,19 @@ import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.gymlazy.lazyrestaurant.Models.Database.FavResDAO;
+import com.gymlazy.lazyrestaurant.Models.Database.RestaurantEntity;
 import com.gymlazy.lazyrestaurant.Models.ResHours;
 import com.gymlazy.lazyrestaurant.Models.Restaurant;
 import com.gymlazy.lazyrestaurant.Models.RestaurantList;
@@ -56,7 +65,7 @@ public class ResDetailFragment extends Fragment {
     private TextView mPriceRating;
     private TextView mWorkingHours;
     private LinearLayout mResInfoDetail;
-
+    private FloatingActionButton mFavBtn;
 
     public static Fragment newInstance(String sResID){
         Bundle b = new Bundle();
@@ -94,6 +103,7 @@ public class ResDetailFragment extends Fragment {
         mResInfoDetail.setVisibility(View.GONE);
         mResNameDetailLayout = (LinearLayout) v.findViewById(R.id.res_name_detail_layout);
         mResNameDetailLayout.setVisibility(View.GONE);
+        mFavBtn = (FloatingActionButton) v.findViewById(R.id.res_favorite_detail_button);
 
         return v;
     }
@@ -119,9 +129,9 @@ public class ResDetailFragment extends Fragment {
         }
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            sWorkingHour = String.join("\n", arlWorkingHourString);
+            sWorkingHour = String.join("\n\n", arlWorkingHourString);
         } else {
-            sWorkingHour = TextUtils.join("\n", arlWorkingHourString);
+            sWorkingHour = TextUtils.join("\n\n", arlWorkingHourString);
         }
 
         return sWorkingHour;
@@ -129,7 +139,7 @@ public class ResDetailFragment extends Fragment {
 
     private class YelpRequest extends AsyncTask<String, Void, Restaurant>{
         private Context mContext;
-
+        private RestaurantList restaurantList;
         public YelpRequest(Context packageContext){
             mContext = packageContext;
         }
@@ -137,7 +147,7 @@ public class ResDetailFragment extends Fragment {
         @Override
         protected Restaurant doInBackground(String... strings) {
             String sResId = strings[0];
-            RestaurantList restaurantList = RestaurantList.get(mContext);
+            restaurantList = RestaurantList.get(mContext);
             Restaurant restaurant = null;
 
             try {
@@ -153,6 +163,7 @@ public class ResDetailFragment extends Fragment {
 
         @Override
         protected void onPostExecute(Restaurant restaurant) {
+//            FavResDAO favResDAO = restaurantList.getDatabase().getFavResDAO();
             mRestaurant = restaurant;
             setupAdapter();
             mResName.setText(restaurant.getName());
@@ -171,6 +182,22 @@ public class ResDetailFragment extends Fragment {
 
             mFoodRating.setRating(restaurant.getRating());
             mPriceRating.setText(restaurant.getPrice());
+            mFavBtn.setImageDrawable(mRestaurant.isFavorite() ? ContextCompat.getDrawable(mContext, R.drawable.ic_baseline_favorite_24) : ContextCompat.getDrawable(mContext,R.drawable.ic_baseline_favorite_border_24));
+            mFavBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    boolean isFav = !mRestaurant.isFavorite();
+                    if(isFav){
+                        mRestaurant.setFavorite(isFav);
+                        new AddFavoriteRequest(mContext).execute(restaurant);
+                        mFavBtn.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_baseline_favorite_24));
+                    } else {
+                        mRestaurant.setFavorite(false);
+                        new RemoveFavoriteRequest(mContext).execute(restaurant);
+                        mFavBtn.setImageDrawable(ContextCompat.getDrawable(mContext,R.drawable.ic_baseline_favorite_border_24));
+                    }
+                }
+            });
             mProgressLayout.setVisibility(View.GONE);
             mResNameDetailLayout.setVisibility(View.VISIBLE);
             mViewPager.setVisibility(View.VISIBLE);
@@ -178,6 +205,62 @@ public class ResDetailFragment extends Fragment {
             mResInfoDetail.setVisibility(View.VISIBLE);
 
 
+        }
+    }
+
+    private class AddFavoriteRequest extends AsyncTask<Restaurant,Void,Void>{
+        private Context mContext;
+        private RestaurantList restaurantList;
+        public AddFavoriteRequest(Context packageContext){
+            mContext = packageContext;
+        }
+
+        @Override
+        protected Void doInBackground(Restaurant... restaurants) {
+            restaurantList = RestaurantList.get(mContext);
+            FavResDAO favResDAO = restaurantList.getDatabase().getFavResDAO();
+
+            RestaurantEntity restaurantEntity = new RestaurantEntity();
+            restaurantEntity.setId(restaurants[0].getId());
+            restaurantEntity.setName(restaurants[0].getName());
+
+            favResDAO.insert(restaurantEntity);
+            restaurants[0].setFavorite(true);
+            restaurantList.updateFavoriteRestaurants(restaurants[0]);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            Toast.makeText(mContext, "Added to Favorite List!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private class RemoveFavoriteRequest extends AsyncTask<Restaurant,Void,Void>{
+        private Context mContext;
+        private RestaurantList restaurantList;
+        public RemoveFavoriteRequest(Context packageContext){
+            mContext = packageContext;
+        }
+
+        @Override
+        protected Void doInBackground(Restaurant... restaurants) {
+            restaurantList = RestaurantList.get(mContext);
+            FavResDAO favResDAO = restaurantList.getDatabase().getFavResDAO();
+
+            RestaurantEntity restaurantEntity = new RestaurantEntity();
+            restaurantEntity.setId(restaurants[0].getId());
+            restaurantEntity.setName(restaurants[0].getName());
+
+            favResDAO.delete(restaurantEntity);
+            restaurants[0].setFavorite(false);
+            restaurantList.updateFavoriteRestaurants(restaurants[0]);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            Toast.makeText(mContext, "Removed out of Favorite List!", Toast.LENGTH_SHORT).show();
         }
     }
 }

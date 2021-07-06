@@ -24,16 +24,19 @@
             android:text="Loading..." />
     </LinearLayout>
 
+
     <LinearLayout
         android:id="@+id/res_info_detail"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@+id/progress_indicator_detail"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/res_name_detail_layout">
-        <ScrollView
+
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:fillViewport="true"
             >
 
@@ -41,8 +44,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:orientation="vertical"
-                app:layout_constraintTop_toBottomOf="@+id/linearLayout">
+                android:orientation="vertical">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -56,10 +58,10 @@
                         android:src="@drawable/ic_baseline_location_on_24" />
 
                     <TextView
-                        android:layout_marginLeft="6dp"
                         android:id="@+id/res_address_detail"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginLeft="6dp"
                         android:text="@string/res_address_label" />
                 </LinearLayout>
 
@@ -81,9 +83,9 @@
                             android:src="@drawable/ic_baseline_restaurant_24" />
 
                         <TextView
-                            android:layout_marginLeft="6dp"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginLeft="6dp"
                             android:text="@string/res_food_rating_label" />
                     </LinearLayout>
 
@@ -94,8 +96,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="32dp"
                         android:layout_marginTop="4dp"
-                        android:theme="@style/RatingBar"
                         android:isIndicator="true"
+                        android:theme="@style/RatingBar"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/res_title" />
                 </LinearLayout>
@@ -118,9 +120,9 @@
                             android:src="@drawable/ic_baseline_attach_money_24" />
 
                         <TextView
-                            android:layout_marginLeft="6dp"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginLeft="6dp"
                             android:text="@string/res_price_rating_label" />
                     </LinearLayout>
 
@@ -155,9 +157,9 @@
                             android:src="@drawable/ic_baseline_access_time_24" />
 
                         <TextView
-                            android:layout_marginLeft="6dp"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginLeft="6dp"
                             android:text="@string/res_hours_label" />
                     </LinearLayout>
 
@@ -173,10 +175,8 @@
                 </LinearLayout>
 
             </LinearLayout>
-        </ScrollView>
+        </androidx.core.widget.NestedScrollView>
     </LinearLayout>
-
-
 
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/view_pager"
@@ -224,6 +224,32 @@
             android:textSize="20sp"/>
 
     </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/res_location_detail_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right"
+        android:layout_margin="16dp"
+        android:backgroundTint="@color/white"
+        app:borderWidth="0dp"
+        app:tint="@color/grey"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/progress_indicator_detail"
+        android:src="@drawable/ic_baseline_gps_fixed_24" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/res_favorite_detail_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right"
+        android:layout_margin="16dp"
+        app:borderWidth="0dp"
+        android:backgroundTint="@color/second_white"
+        app:tint="@color/razzmatazz"
+
+        app:layout_constraintBottom_toTopOf="@+id/res_location_detail_button"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 
 

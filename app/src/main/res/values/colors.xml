@@ -16,4 +16,5 @@
     <color name="rating_star">#ffcc6f</color>
     <color name="lightGrey">#d3d3d3</color>
     <color name="money_color">#85bb65</color>
+    <color name="grey">#808080</color>
 </resources>

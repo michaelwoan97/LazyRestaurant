@@ -29,11 +29,17 @@ public class RestaurantList {
     private List<Restaurant> mRestaurants;
     private List<Restaurant> mFavRestaurants;
     private Context mContext;
+    private FavResDatabase mDatabase;
 
     public static enum RequestCodes{
         ALL,
         DETAIL
     }
+
+    public FavResDatabase getDatabase() {
+        return mDatabase;
+    }
+
     public static RestaurantList get(Context context){
         // check whether the singleton is exits
         if(sRestaurantList == null){
@@ -45,6 +51,8 @@ public class RestaurantList {
 
     private RestaurantList(Context context) {
         mContext = context;
+        mDatabase = Room.databaseBuilder(mContext, FavResDatabase.class, "FavResDB")
+                .build();
     }
 
     public List<Restaurant> getRestaurants() {
@@ -89,6 +97,8 @@ public class RestaurantList {
         restaurant = getRestaurantFromResponse(response);
         return restaurant;
     }
+
+
 
     /**
      * fetch all favorite restaurants from database (can only use in background thread)
@@ -163,8 +173,12 @@ public class RestaurantList {
         restaurant.setCoordinates(new double[]{joRestaurant.getJSONObject("coordinates").getDouble("latitude"), joRestaurant.getJSONObject("coordinates").getDouble("longitude")});
 
 
-        // check whether the object has favorite field
-        if(!joRestaurant.has("is_favorite")){
+        // check whether the restaurant is in favorite list
+        FavResDAO favResDAO = mDatabase.getFavResDAO();
+        RestaurantEntity favRes = favResDAO.getRestaurantWithId(restaurant.getId());
+        if(favRes != null){
+            restaurant.setFavorite(true);
+        } else {
             restaurant.setFavorite(false);
         }
 
@@ -225,5 +239,17 @@ public class RestaurantList {
             }
         }
         return stringArray;
+    }
+
+    /**
+     * use for updating restaurant info in a singleton
+     * @param restaurant
+     */
+    public void updateFavoriteRestaurants(Restaurant restaurant){
+        for(Restaurant res: mRestaurants){
+            if(res.getId().equals(restaurant.getId())){
+                res.setFavorite(restaurant.isFavorite());
+            }
+        }
     }
 }
